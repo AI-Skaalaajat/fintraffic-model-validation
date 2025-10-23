@@ -1,4 +1,4 @@
-## introduce
+## Introduce
 This project aims to obtain road sensor data from the digitraffic API, identify the dryness and wetness of the road, and save the results to a local file. By analyzing this sensor data, traffic management departments can better understand road conditions, thereby improving traffic safety and efficiency.
 Currently in the testing phase.
 
@@ -14,4 +14,5 @@ Currently in the testing phase.
   - [models](models) The directory contains the trained model files, rar files need to be extracted before use.
   - [rejected_images](rejected_images) The directory contains image files that were rejected by the model.
   - [single_image_test](single_image_test) Directory containing image files for a single test.
+
   - Currently only supported image format is JPG
