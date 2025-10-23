@@ -15,7 +15,7 @@ PIC_SIZE = 224
 # MODEL_PATH = "../../models/resnetV2_final_224.pth" # full fine-tuning model
 # MODEL_PATH = "../../models/resnetV2_final_fine-tune_0.98.pth" #Partial fine-tuning model
 MODEL_PATH = "../../models/resnetV2_final_fine_tune_weight_0.97.pth"  # Partial fine-tuning model(Model with adjusted weights)
-# MODEL_PATH = "../../models/resnetV2.pth"  # same as resnetV2_final_fine_tune_weight_0.97.pth, but no rejection threshold saved
+# MODEL_PATH = "../../models/resnetV2_final.pth"  # same as resnetV2_final_fine_tune_weight_0.97.pth, but no rejection threshold saved
 # --------------------------different models selection--------------------------
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
