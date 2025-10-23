@@ -11,7 +11,7 @@ Currently in the testing phase.
     - [resnetV2_50_test.py](code%2Fmodel_test%2FresnetV2_50_test.py) The ResNetV2-50 model is used to evaluate the model metric.
     - [resnetV2_50_test_single_img.py](code%2Fmodel_test%2FresnetV2_50_test_single_img.py) Use the ResNetV2-50 model to make predictions for a single image.
   - [dataset](dataset) The directory contains the datasets for training and testing.
-  - [models](models) The directory contains the trained model files.
+  - [models](models) The directory contains the trained model files, rar files need to be extracted before use.
   - [rejected_images](rejected_images) The directory contains image files that were rejected by the model.
   - [single_image_test](single_image_test) Directory containing image files for a single test.
   - Currently only supported image format is JPG
