@@ -33,3 +33,43 @@ def setup_resnet(layers: int,
     model.fc = nn.Linear(model.fc.in_features, len(class_names) - 1).to(device)
 
     return model, preprocess
+
+def setup_swin_transformer(version: int,
+                           size: str,
+                           pretrained: bool,
+                           class_names: List[str],
+                           device: str) -> Tuple[nn.Module, transforms.Compose]:
+    
+    if version == 1:
+        if size == "tiny":
+            weights = models.Swin_T_Weights.DEFAULT
+            model = models.swin_t(weights) if pretrained else models.swin_t()
+        elif size == "small":
+            weights = models.Swin_S_Weights.DEFAULT
+            model = models.swin_s(weights) if pretrained else models.swin_s()
+        elif size == "base":
+            weights = models.Swin_B_Weights.DEFAULT
+            model = models.swin_b(weights) if pretrained else models.swin_b()
+
+    elif version == 2:
+        if size == "tiny":
+            weights = models.Swin_V2_T_Weights.DEFAULT
+            model = models.swin_v2_t(weights) if pretrained else models.swin_v2_t()
+        elif size == "small":
+            weights = models.Swin_V2_S_Weights.DEFAULT
+            model = models.swin_v2_s(weights) if pretrained else models.swin_v2_s()
+        elif size == "base":
+            weights = models.Swin_V2_B_Weights.DEFAULT
+            model = models.swin_v2_b(weights) if pretrained else models.swin_v2_b()
+
+    model.to(device)
+    preprocess = weights.transforms()
+
+    if pretrained:
+        for param in model.parameters():
+            param.requires_grad = False
+
+    features = model.head.in_features
+    model.head = nn.Linear(features, len(class_names) - 1).to(device)
+
+    return model, preprocess
