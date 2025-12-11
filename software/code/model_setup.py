@@ -1,6 +1,8 @@
+from functools import partial
 import torch.nn as nn
 from torchvision import models, transforms
 from typing import List, Tuple
+from torchinfo import summary
 
 def setup_resnet(layers: int,
                  pretrained: bool,
@@ -71,5 +73,41 @@ def setup_swin_transformer(version: int,
 
     features = model.head.in_features
     model.head = nn.Linear(features, len(class_names) - 1).to(device)
+
+    return model, preprocess
+
+def setup_convnext(size: str,
+                   pretrained: bool,
+                   class_names: List[str],
+                   device: str) -> Tuple[nn.Module, transforms.Compose]:
+    
+    if size == "tiny":
+        weights = models.ConvNeXt_Tiny_Weights.DEFAULT
+        model = models.convnext_tiny(weights) if pretrained else models.convnext_tiny()
+    elif size == "small":
+        weights = models.ConvNeXt_Small_Weights.DEFAULT
+        model = models.convnext_small(weights) if pretrained else models.convnext_small()
+    elif size == "base":
+        weights = models.ConvNeXt_Base_Weights.DEFAULT
+        model = models.convnext_base(weights) if pretrained else models.convnext_base()
+    elif size == "large":
+        weights = models.ConvNeXt_Large_Weights.DEFAULT
+        model = models.convnext_large(weights) if pretrained else models.convnext_large()
+
+    model.to(device)
+    preprocess = weights.transforms()
+
+    if pretrained:
+        for param in model.parameters():
+            param.requires_grad = False
+
+    lastconv_output_channels = 1024
+    norm_layer = partial(models.convnext.LayerNorm2d, eps=1e-6)
+
+    model.classifier = nn.Sequential(
+        norm_layer(lastconv_output_channels),
+        nn.Flatten(1),
+        nn.Linear(lastconv_output_channels, len(class_names) - 1)
+    ).to(device)
 
     return model, preprocess
