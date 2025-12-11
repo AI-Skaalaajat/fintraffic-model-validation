@@ -85,9 +85,9 @@ def train(model: torch.nn.Module,
                                                 device=device)
         
         test_loss, test_accuracy = test_step(model=model,
-                                            dataloader=test_dataloader,
-                                            loss_function=loss_function,
-                                            device=device)
+                                             dataloader=test_dataloader,
+                                             loss_function=loss_function,
+                                             device=device)
         
         print(
             f"Epoch: {epoch + 1} | "
