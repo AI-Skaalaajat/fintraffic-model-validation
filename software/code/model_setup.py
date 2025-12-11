@@ -29,8 +29,7 @@ def setup_resnet(layers: int,
     preprocess = weights.transforms()
     
     if pretrained:
-        for param in model.parameters():
-            param.requires_grad = False
+        _freeze_parameters(model)
 
     model.fc = nn.Linear(model.fc.in_features, len(class_names) - 1).to(device)
 
@@ -68,8 +67,7 @@ def setup_swin_transformer(version: int,
     preprocess = weights.transforms()
 
     if pretrained:
-        for param in model.parameters():
-            param.requires_grad = False
+        _freeze_parameters(model)
 
     features = model.head.in_features
     model.head = nn.Linear(features, len(class_names) - 1).to(device)
@@ -98,8 +96,7 @@ def setup_convnext(size: str,
     preprocess = weights.transforms()
 
     if pretrained:
-        for param in model.parameters():
-            param.requires_grad = False
+        _freeze_parameters(model)
 
     lastconv_output_channels = 1024
     norm_layer = partial(models.convnext.LayerNorm2d, eps=1e-6)
@@ -111,3 +108,7 @@ def setup_convnext(size: str,
     ).to(device)
 
     return model, preprocess
+
+def _freeze_parameters(model: nn.Module):
+    for param in model.parameters():
+        param.requires_grad = False
