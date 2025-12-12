@@ -23,28 +23,29 @@ def train_step(model: torch.nn.Module,
     
     model.train()
 
-    train_loss = 0
-    train_accuracy = 0
+    running_loss = 0
+    running_accuracy = 0
 
-    for batch, (X, y) in enumerate(dataloader):
-        X = X.to(device).type(torch.float)
-        y = y.to(device).type(torch.float)
+    for batch, data in enumerate(dataloader):
+        inputs, labels = data
+        inputs = inputs.type(torch.float).to(device)
+        labels = labels.type(torch.float).to(device)
 
         optimizer.zero_grad()
 
-        y_logits = model(X).squeeze()
-        y_labels = torch.round(torch.sigmoid(y_logits))
+        outputs = model(inputs).squeeze()
+        predicted_labels = torch.round(torch.sigmoid(outputs))
 
-        loss = loss_function(y_logits, y)
-        train_loss += loss.item()
-        train_accuracy += (y_labels == y).sum().item() / len(y_labels)
-
-        
+        loss = loss_function(outputs, labels)
         loss.backward()
+
         optimizer.step()
 
-    train_loss = train_loss / len(dataloader)
-    train_accuracy = train_accuracy / len(dataloader)
+        running_loss += loss.item()
+        running_accuracy += (predicted_labels == labels).sum().item() / len(labels)
+
+    train_loss = running_loss / len(dataloader)
+    train_accuracy = running_accuracy / len(dataloader)
 
     return train_loss, train_accuracy
 
@@ -54,24 +55,25 @@ def validation_step(model: torch.nn.Module,
     
     model.eval()
 
-    validation_loss = 0
-    validation_accuracy = 0
+    running_loss = 0
+    running_accuracy = 0
 
     with torch.inference_mode():
-        for batch, (X, y) in enumerate(dataloader):
-            X = X.to(device).type(torch.float)
-            y = y.to(device).type(torch.float)
+        for batch, data in enumerate(dataloader):
+            inputs, labels = data
+            inputs = inputs.type(torch.float).to(device)
+            labels = labels.type(torch.float).to(device)
 
-            y_logits = model(X).squeeze()
-            y_labels = torch.round(torch.sigmoid(y_logits))
+            outputs = model(inputs).squeeze()
+            predicted_labels = torch.round(torch.sigmoid(outputs))
 
-            loss = loss_function(y_logits, y)
-            validation_loss += loss.item()
+            loss = loss_function(outputs, labels)
+            running_loss += loss.item()
 
-            validation_accuracy += (y_labels == y).sum().item() / len(y_labels)
+            running_accuracy += (predicted_labels == labels).sum().item() / len(labels)
 
-    validation_loss = validation_loss / len(dataloader)
-    validation_accuracy = validation_accuracy / len(dataloader)
+    validation_loss = running_loss / len(dataloader)
+    validation_accuracy = running_accuracy / len(dataloader)
 
     return validation_loss, validation_accuracy
 
