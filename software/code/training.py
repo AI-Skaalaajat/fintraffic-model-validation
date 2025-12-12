@@ -1,9 +1,10 @@
+import os
 import torch
 import torch.nn as nn
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Tuple
+from torchvision import datasets
 from tqdm.auto import tqdm
-import data_setup
 import model_setup
 import utils
 
@@ -15,6 +16,7 @@ train_directory = data_path / "train"
 test_directory = data_path / "test"
 batch_size = 32
 epochs = 5
+num_workers = os.cpu_count()
 
 def train_step(model: torch.nn.Module,
                dataloader: torch.utils.data.DataLoader,
@@ -78,22 +80,27 @@ def validation_step(model: torch.nn.Module,
     return validation_loss, validation_accuracy
 
 def main():
-    class_names = data_setup.get_class_names(train_directory)
+    class_names = datasets.ImageFolder(train_directory).classes
 
     model, preprocess = model_setup.setup_resnet(layers=50,
                                                 pretrained=True,
                                                 class_names=class_names,
                                                 device=device)
+    
+    dataset = datasets.ImageFolder(train_directory, transform=preprocess)
+    train_set, validation_set = torch.utils.data.random_split(dataset, [0.8, 0.2])
 
-    train_dataloader = data_setup.create_dataloader(directory=train_directory,
-                                                    transform=preprocess,
-                                                    batch_size=batch_size,
-                                                    shuffle=True)
-
-    validation_dataloader = data_setup.create_dataloader(directory=test_directory,
-                                                         transform=preprocess,
-                                                         batch_size=batch_size,
-                                                         shuffle=False)
+    train_dataloader = torch.utils.data.DataLoader(train_set,
+                                                   batch_size=batch_size,
+                                                   shuffle=True,
+                                                   num_workers=num_workers,
+                                                   pin_memory=True)
+    
+    validation_dataloader = torch.utils.data.DataLoader(validation_set,
+                                                        batch_size=batch_size,
+                                                        shuffle=False,
+                                                        num_workers=num_workers,
+                                                        pin_memory=True)
 
     loss_function = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -127,6 +134,8 @@ def main():
         results["train_accuracy"].append(train_accuracy)
         results["validation_loss"].append(validation_loss)
         results["validation_accuracy"].append(validation_accuracy)
+
+    utils.plot_loss_curves(results)
 
     utils.save_model(model, model_path, model_name)
 
