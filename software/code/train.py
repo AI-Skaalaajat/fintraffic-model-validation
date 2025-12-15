@@ -15,6 +15,7 @@ model_name = "ResNet-50.pth"
 train_directory = data_path / "train"
 batch_size = 32
 epochs = 10
+learning_rate = 0.001
 num_workers = os.cpu_count()
 
 def train_step(model: torch.nn.Module,
@@ -27,15 +28,13 @@ def train_step(model: torch.nn.Module,
     running_loss = 0
     running_accuracy = 0
 
-    for batch, data in enumerate(dataloader):
-        inputs, labels = data
-        inputs = inputs.type(torch.float).to(device)
-        labels = labels.type(torch.float).to(device)
+    for batch, (inputs, labels) in enumerate(dataloader):
+        inputs, labels = inputs.to(device), labels.to(device)
 
         optimizer.zero_grad()
 
-        outputs = model(inputs).squeeze()
-        predicted_labels = torch.round(torch.sigmoid(outputs))
+        outputs = model(inputs)
+        predicted_labels = torch.argmax(torch.softmax(outputs, dim=1), dim=1)
 
         loss = loss_function(outputs, labels)
         loss.backward()
@@ -60,13 +59,11 @@ def validation_step(model: torch.nn.Module,
     running_accuracy = 0
 
     with torch.inference_mode():
-        for batch, data in enumerate(dataloader):
-            inputs, labels = data
-            inputs = inputs.type(torch.float).to(device)
-            labels = labels.type(torch.float).to(device)
+        for batch, (inputs, labels) in enumerate(dataloader):
+            inputs, labels = inputs.to(device), labels.to(device)
 
-            outputs = model(inputs).squeeze()
-            predicted_labels = torch.round(torch.sigmoid(outputs))
+            outputs = model(inputs)
+            predicted_labels = torch.argmax(torch.softmax(outputs, dim=1), dim=1)
 
             loss = loss_function(outputs, labels)
 
@@ -101,8 +98,8 @@ def main():
                                                         num_workers=num_workers,
                                                         pin_memory=True)
 
-    loss_function = nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    loss_function = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     
     results = {
         "train_loss": [],

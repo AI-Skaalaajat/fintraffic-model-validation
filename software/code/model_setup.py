@@ -2,7 +2,6 @@ from functools import partial
 import torch.nn as nn
 from torchvision import models, transforms
 from typing import List, Tuple
-from torchinfo import summary
 
 def setup_resnet(layers: int,
                  pretrained: bool,
@@ -31,7 +30,7 @@ def setup_resnet(layers: int,
     if pretrained:
         _freeze_parameters(model)
 
-    model.fc = nn.Linear(model.fc.in_features, len(class_names) - 1).to(device)
+    model.fc = nn.Linear(model.fc.in_features, len(class_names)).to(device)
 
     return model, preprocess
 
@@ -70,7 +69,7 @@ def setup_swin_transformer(version: int,
         _freeze_parameters(model)
 
     features = model.head.in_features
-    model.head = nn.Linear(features, len(class_names) - 1).to(device)
+    model.head = nn.Linear(features, len(class_names)).to(device)
 
     return model, preprocess
 
@@ -104,7 +103,7 @@ def setup_convnext(size: str,
     model.classifier = nn.Sequential(
         norm_layer(lastconv_output_channels),
         nn.Flatten(1),
-        nn.Linear(lastconv_output_channels, len(class_names) - 1)
+        nn.Linear(lastconv_output_channels, len(class_names))
     ).to(device)
 
     return model, preprocess
