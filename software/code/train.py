@@ -13,9 +13,8 @@ data_path = Path("software/data")
 model_path = Path("software/models")
 model_name = "ResNet-50.pth"
 train_directory = data_path / "train"
-test_directory = data_path / "test"
 batch_size = 32
-epochs = 5
+epochs = 10
 num_workers = os.cpu_count()
 
 def train_step(model: torch.nn.Module,
@@ -70,8 +69,8 @@ def validation_step(model: torch.nn.Module,
             predicted_labels = torch.round(torch.sigmoid(outputs))
 
             loss = loss_function(outputs, labels)
-            running_loss += loss.item()
 
+            running_loss += loss.item()
             running_accuracy += (predicted_labels == labels).sum().item() / len(labels)
 
     validation_loss = running_loss / len(dataloader)
