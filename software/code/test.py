@@ -27,6 +27,10 @@ def main():
 
     model.eval()
 
+    label_indexes = []
+    for i in range(len(class_names)):
+        label_indexes.append(i)
+
     true_labels = []
     predicted_labels = []
 
@@ -38,20 +42,25 @@ def main():
             predicted_label = torch.argmax(torch.softmax(output, dim=1), dim=1)
             
             true_labels.append(label.item())
-            predicted_labels.append(predicted_label.cpu())
+            predicted_labels.append(predicted_label.item())
 
-        accuracy = accuracy_score(true_labels, predicted_labels)
-        precision = precision_score(true_labels, predicted_labels)
-        recall = recall_score(true_labels, predicted_labels)
-        f1 = f1_score(true_labels, predicted_labels)
+        total_accuracy = accuracy_score(true_labels, predicted_labels)
+        precision = precision_score(true_labels, predicted_labels, labels=label_indexes, average=None)
+        recall = recall_score(true_labels, predicted_labels, labels=label_indexes, average=None)
+        f1 = f1_score(true_labels, predicted_labels, labels=label_indexes, average=None)
 
-        print(f"Accuracy: {accuracy}")
-        print(f"Precision: {precision}")
-        print(f"Recall: {recall}")
-        print(f"F1 score: {f1}")
+        print(f"Total accuracy: {total_accuracy}\n")
 
-        confusion_matrix = confusion_matrix(true_labels, predicted_labels)
-        disp = ConfusionMatrixDisplay(confusion_matrix, display_labels=class_names)
+        for i in range(len(class_names)):
+            class_name = class_names[i]
+
+            print(f"Metrics for '{class_name}' class:")
+            print(f"Precision: {precision[i]}")
+            print(f"Recall: {recall[i]}")
+            print(f"F1 Score: {f1[i]}\n")
+
+        matrix = confusion_matrix(true_labels, predicted_labels)
+        disp = ConfusionMatrixDisplay(matrix, display_labels=class_names)
         disp.plot()
         plt.show()
 
