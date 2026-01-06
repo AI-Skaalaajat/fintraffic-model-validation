@@ -16,13 +16,13 @@ def read_config():
     model = config.get('Model', 'model')
     pretrained = config.getboolean('Model', 'pretrained')
     size = config.get('Model', 'size')
-    resnet_layers = config.get('Model', 'resnet_layers')
-    swin_version = config.get('Model', 'swin_version')
-    output_file_name = config.get('Model', 'output_file_name')
+    resnet_layers = config.getint('Model', 'resnet_layers')
+    swin_transformer_version = config.getint('Model', 'swin_transformer_version')
+    model_file_name = config.get('Model', 'model_file_name')
 
-    batch_size = config.get('Training', 'batch_size')
-    epochs = config.get('Training', 'epochs')
-    learning_rate = config.get('Training', 'learning_rate')
+    batch_size = config.getint('Training', 'batch_size')
+    epochs = config.getint('Training', 'epochs')
+    learning_rate = config.getfloat('Training', 'learning_rate')
 
     config_values = {
         'train_directory': train_directory,
@@ -32,8 +32,8 @@ def read_config():
         'pretrained': pretrained,
         'size': size,
         'resnet_layers': resnet_layers,
-        'swin_version': swin_version,
-        'output_file_name': output_file_name,
+        'swin_transformer_version': swin_transformer_version,
+        'model_file_name': model_file_name,
         'batch_size': batch_size,
         'epochs': epochs,
         'learning_rate': learning_rate
