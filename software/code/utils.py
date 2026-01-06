@@ -3,6 +3,43 @@ from pathlib import Path
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from typing import Dict, List
+import configparser
+
+def read_config():
+    config = configparser.ConfigParser()
+    config.read('software/code/config.ini')
+
+    train_directory = config.get('Directory', 'train_directory')
+    test_directory = config.get('Directory', 'test_directory')
+    model_directory = config.get('Directory', 'model_directory')
+
+    model = config.get('Model', 'model')
+    pretrained = config.getboolean('Model', 'pretrained')
+    size = config.get('Model', 'size')
+    resnet_layers = config.get('Model', 'resnet_layers')
+    swin_version = config.get('Model', 'swin_version')
+    output_file_name = config.get('Model', 'output_file_name')
+
+    batch_size = config.get('Training', 'batch_size')
+    epochs = config.get('Training', 'epochs')
+    learning_rate = config.get('Training', 'learning_rate')
+
+    config_values = {
+        'train_directory': train_directory,
+        'test_directory': test_directory,
+        'model_directory': model_directory,
+        'model': model,
+        'pretrained': pretrained,
+        'size': size,
+        'resnet_layers': resnet_layers,
+        'swin_version': swin_version,
+        'output_file_name': output_file_name,
+        'batch_size': batch_size,
+        'epochs': epochs,
+        'learning_rate': learning_rate
+    }
+
+    return config_values
 
 def save_model(model: nn.Module,
                directory: Path,
