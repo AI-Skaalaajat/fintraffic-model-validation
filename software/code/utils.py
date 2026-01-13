@@ -1,3 +1,4 @@
+import os
 import torch
 from pathlib import Path
 import torch.nn as nn
@@ -9,9 +10,11 @@ def read_config():
     config = configparser.ConfigParser()
     config.read('software/code/config.ini')
 
-    train_directory = config.get('Directory', 'train_directory')
-    test_directory = config.get('Directory', 'test_directory')
-    model_directory = config.get('Directory', 'model_directory')
+    train_directory = config.get('Path', 'train_directory')
+    test_directory = config.get('Path', 'test_directory')
+    model_directory = config.get('Path', 'model_directory')
+    output_directory = config.get('Path', 'output_directory')
+    grad_cam_image_path = config.get('Path', 'grad_cam_image_path')
 
     model = config.get('Model', 'model')
     pretrained = config.getboolean('Model', 'pretrained')
@@ -28,6 +31,8 @@ def read_config():
         'train_directory': train_directory,
         'test_directory': test_directory,
         'model_directory': model_directory,
+        'output_directory': output_directory,
+        'grad_cam_image_path': grad_cam_image_path,
         'model': model,
         'pretrained': pretrained,
         'size': size,
@@ -48,6 +53,24 @@ def save_model(model: nn.Module,
     model_path = directory / model_name
     torch.save(obj=model.state_dict(),
                f=model_path)
+    
+def generate_file_path(model_name: str,
+                       output_directory: Path,
+                       file_extension: str,
+                       directory_name: str) -> Path:
+    
+    target_directory = output_directory / directory_name
+    
+    if not os.path.exists(target_directory):
+        os.makedirs(target_directory)
+    
+    file_name = model_name.split('.')[0]
+    
+    i = 0
+    while os.path.exists(f'{target_directory}/{file_name}-{i}.{file_extension}'):
+        i += 1
+
+    return f'{target_directory}/{file_name}-{i}.{file_extension}'
     
 def plot_loss_curves(results: Dict[str, List[float]]):
     train_loss = results['train_loss']
