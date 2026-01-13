@@ -30,7 +30,6 @@ def predict(model, image_tensor, class_names):
         probabilities = torch.softmax(output, dim=1)
         predicted_label = torch.argmax(probabilities, dim=1)
         
-        print(probabilities)
         confidence = probabilities[0][predicted_label].item()
 
         results = {
