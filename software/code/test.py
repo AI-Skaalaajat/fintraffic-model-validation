@@ -1,3 +1,5 @@
+import os
+from typing import Dict, List
 import torch
 from torchvision import datasets
 from matplotlib import pyplot as plt
@@ -5,13 +7,52 @@ from tqdm.auto import tqdm
 from pathlib import Path
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
 import model_setup
-from utils import read_config
+from utils import read_config, generate_file_path
 
 config = read_config()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 test_directory = Path(config['test_directory'])
 model_directory = Path(config['model_directory'])
+output_directory = Path(config['output_directory'])
 model_name = config['model_file_name']
+
+def calculate_metrics(true_labels: List,
+                      predicted_labels: List,
+                      label_indexes: List) -> Dict:
+    metrics = {}
+
+    metrics['accuracy'] = accuracy_score(true_labels, predicted_labels)
+    metrics['precision'] = precision_score(true_labels, predicted_labels, labels=label_indexes, average=None)
+    metrics['recall'] = recall_score(true_labels, predicted_labels, labels=label_indexes, average=None)
+    metrics['f1'] = f1_score(true_labels, predicted_labels, labels=label_indexes, average=None)
+
+    return metrics
+
+def create_confusion_matrix(true_labels: List,
+                            predicted_labels: List,
+                            class_names: List) -> plt.Figure:
+    
+    matrix = confusion_matrix(true_labels, predicted_labels)
+    display = ConfusionMatrixDisplay(matrix, display_labels=class_names)
+    return display.plot().figure_
+
+def save_metrics(metrics: Dict,
+                 class_names: List,
+                 file_path: Path):
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(f'Overall accuracy: {metrics['accuracy']}')
+
+        for i in range(len(class_names)):
+            class_name = class_names[i]
+
+            file.write(f'\n\nMetrics for "{class_name}" class:\n')
+            file.write(f'Precision: {metrics['precision'][i]}\n')
+            file.write(f'Recall: {metrics['recall'][i]}\n')
+            file.write(f'F1 Score: {metrics['f1'][i]}')
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        print(file.read())
 
 def main():
     class_names = datasets.ImageFolder(test_directory).classes
@@ -48,25 +89,29 @@ def main():
             true_labels.append(label.item())
             predicted_labels.append(predicted_label.item())
 
-        total_accuracy = accuracy_score(true_labels, predicted_labels)
-        precision = precision_score(true_labels, predicted_labels, labels=label_indexes, average=None)
-        recall = recall_score(true_labels, predicted_labels, labels=label_indexes, average=None)
-        f1 = f1_score(true_labels, predicted_labels, labels=label_indexes, average=None)
-
-        print(f'Total accuracy: {total_accuracy}\n')
-
-        for i in range(len(class_names)):
-            class_name = class_names[i]
-
-            print(f'Metrics for "{class_name}" class:')
-            print(f'Precision: {precision[i]}')
-            print(f'Recall: {recall[i]}')
-            print(f'F1 Score: {f1[i]}\n')
-
-        matrix = confusion_matrix(true_labels, predicted_labels)
-        disp = ConfusionMatrixDisplay(matrix, display_labels=class_names)
-        disp.plot()
-        plt.show()
+        metrics = calculate_metrics(true_labels,
+                                    predicted_labels,
+                                    label_indexes)
+        
+        metrics_path = generate_file_path(model_name,
+                                          output_directory,
+                                          file_extension='txt',
+                                          directory_name='metrics')
+        
+        save_metrics(metrics,
+                     class_names,
+                     file_path=metrics_path)
+        
+        matrix = create_confusion_matrix(true_labels,
+                                         predicted_labels,
+                                         class_names)
+        
+        confusion_matrix_path = generate_file_path(model_name,
+                                                   output_directory,
+                                                   file_extension='jpg',
+                                                   directory_name='confusion-matrix')
+        
+        matrix.savefig(confusion_matrix_path, bbox_inches='tight', pad_inches=0.1)
 
 if __name__ == '__main__':
     main()
