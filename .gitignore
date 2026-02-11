@@ -1,0 +1,5 @@
+.idea
+software/data
+software/models
+software/outputs
+software/code/__pycache__
