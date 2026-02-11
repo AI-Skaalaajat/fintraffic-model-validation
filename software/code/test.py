@@ -1,4 +1,3 @@
-import os
 from typing import Dict, List
 import torch
 from torchvision import datasets
@@ -34,7 +33,7 @@ def create_confusion_matrix(true_labels: List,
     
     matrix = confusion_matrix(true_labels, predicted_labels)
     display = ConfusionMatrixDisplay(matrix, display_labels=class_names)
-    return display.plot().figure_
+    return display.plot(cmap=plt.cm.Blues).figure_
 
 def save_metrics(metrics: Dict,
                  class_names: List,
@@ -102,16 +101,17 @@ def main():
                      class_names,
                      file_path=metrics_path)
         
-        matrix = create_confusion_matrix(true_labels,
-                                         predicted_labels,
-                                         class_names)
+        cm = create_confusion_matrix(true_labels,
+                                     predicted_labels,
+                                     class_names)
         
-        confusion_matrix_path = generate_file_path(model_name,
-                                                   output_directory,
-                                                   file_extension='jpg',
-                                                   directory_name='confusion-matrix')
+        cm_path = generate_file_path(model_name,
+                                     output_directory,
+                                     file_extension='jpg',
+                                     directory_name='confusion-matrix')
         
-        matrix.savefig(confusion_matrix_path, bbox_inches='tight', pad_inches=0.1)
+        cm.savefig(cm_path, bbox_inches='tight', pad_inches=0.1)
+        cm.show()
 
 if __name__ == '__main__':
     main()
